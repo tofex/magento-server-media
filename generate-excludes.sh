@@ -61,7 +61,8 @@ for server in "${serverList[@]}"; do
   if [[ "${type}" == "local" ]]; then
     webPath=$(ini-parse "${currentPath}/../env.properties" "yes" "${server}" "webPath")
     echo "Checking on server: ${server}"
-    excludeFile="${currentPath}/exclude-${mode}.list"
+    mkdir -p "${currentPath}/../var/media/"
+    excludeFile="${currentPath}/../var/media/exclude-${mode}.list"
 
     if [[ "${mode}" == "dev" ]]; then
       cat << EOF > "${excludeFile}"

@@ -49,7 +49,7 @@ if [[ ! -f "${currentPath}/../env.properties" ]]; then
 fi
 
 if [[ "${mode}" == "dev" ]] || [[ "${mode}" == "test" ]]; then
-  excludeFile="${currentPath}/exclude-${mode}.list"
+  excludeFile="${currentPath}/../var/media/exclude-${mode}.list"
 
   if [[ ! -f "${excludeFile}" ]]; then
       echo "No exclude list generated"
