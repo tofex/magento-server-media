@@ -98,7 +98,7 @@ for server in "${serverList[@]}"; do
     fi
 
     if [[ "${upload}" == 1 ]]; then
-      "${currentPath}/upload-dump.sh" -t media -m "${mode}" -d "${date}"
+      "${currentPath}/upload-dump.sh" -m "${mode}" -d "${date}"
 
       if [[ "${remove}" == 1 ]]; then
         echo "Removing created archive: ${dumpPath}/media-${mode}-${date}.tar.gz"

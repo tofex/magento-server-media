@@ -9,8 +9,8 @@ usage: ${scriptName} options
 
 OPTIONS:
   -h  Show this message
-  -d  Date of the file
   -m  Mode if type is media or mysql (dev/test)
+  -d  Date of the file
 
 Example: ${scriptName} -m dev -d 2018-06-05
 EOF
@@ -21,14 +21,14 @@ trim()
   echo -n "$1" | xargs
 }
 
-date=
 mode=
+date=
 
-while getopts hd:m:? option; do
+while getopts hm:d:? option; do
   case "${option}" in
     h) usage; exit 1;;
-    d) date=$(trim "$OPTARG");;
     m) mode=$(trim "$OPTARG");;
+    d) date=$(trim "$OPTARG");;
     ?) usage; exit 1;;
   esac
 done

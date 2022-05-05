@@ -100,9 +100,9 @@ for server in "${serverList[@]}"; do
       if [[ "${download}" == 1 ]]; then
         mkdir -p "${dumpPath}"
         if [[ -z "${accessToken}" ]]; then
-          "${currentPath}/download-dump.sh" -s "${system}" -t media -m "${mode}"
+          "${currentPath}/download-dump.sh" -s "${system}" -m "${mode}"
         else
-          "${currentPath}/download-dump.sh" -s "${system}" -t media -m "${mode}" -a "${accessToken}"
+          "${currentPath}/download-dump.sh" -s "${system}" -m "${mode}" -a "${accessToken}"
         fi
       fi
 
