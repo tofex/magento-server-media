@@ -57,7 +57,7 @@ if [ -z "${projectId}" ]; then
   exit 1
 fi
 
-file="${currentPath}/media/dumps/media-${mode}-${date}.tar.gz"
+file="${currentPath}/../var/media/dumps/media-${mode}-${date}.tar.gz"
 objectFile="${projectId}-${mode}.tar.gz"
 
 if [ ! -f "${file}" ]; then

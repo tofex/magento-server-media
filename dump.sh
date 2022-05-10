@@ -76,7 +76,7 @@ for server in "${serverList[@]}"; do
       sourcePath="${webPath}/pub/media"
     fi
 
-    dumpPath="${currentPath}/dumps"
+    dumpPath="${currentPath}/../var/media/dumps"
 
     mkdir -p "${dumpPath}"
 
