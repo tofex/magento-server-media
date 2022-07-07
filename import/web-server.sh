@@ -61,7 +61,7 @@ if [[ ! -f "${importFile}" ]]; then
   exit 1
 fi
 
-if [[ ${magentoVersion::0:1} == 1 ]]; then
+if [[ ${magentoVersion:0:1} == 1 ]]; then
   targetPath="${webPath}/media"
 else
   targetPath="${webPath}/pub/media"
