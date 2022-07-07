@@ -42,5 +42,5 @@ if [[ -z "${importFile}" ]]; then
 fi
 
 "${currentPath}/../core/script/run.sh" "install,webServer" "${currentPath}/import/web-server.sh" \
-  --importFile "${importFile}" \
+  --importFile "file:${importFile}" \
   --mode "${mode}"
