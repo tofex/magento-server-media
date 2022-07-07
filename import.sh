@@ -11,10 +11,10 @@ usage: ${scriptName} options
 
 OPTIONS:
   -h  Show this message
-  -f  Use this file
+  -i  Import file
   -m  Mode (dev/test/live/catalog/product)
 
-Example: ${scriptName} -f import.tar.gz -m dev
+Example: ${scriptName} -i import.tar.gz -m dev
 EOF
 }
 
@@ -23,25 +23,24 @@ trim()
   echo -n "$1" | xargs
 }
 
-dumpFile=
+importFile=
 mode=
 
-while getopts hf:m:? option; do
+while getopts hi:m:? option; do
   case "${option}" in
     h) usage; exit 1;;
-    f) dumpFile=$(trim "$OPTARG");;
+    i) importFile=$(trim "$OPTARG");;
     m) mode=$(trim "$OPTARG");;
     ?) usage; exit 1;;
   esac
 done
 
-if [[ -z "${mode}" ]] && [[ -z "${dumpFile}" ]]; then
-  echo "Specify either mode or file to import"
-  echo ""
+if [[ -z "${importFile}" ]]; then
+  echo "No import file specified!"
   usage
   exit 1
 fi
 
 "${currentPath}/../core/script/run.sh" "install,webServer" "${currentPath}/import/web-server.sh" \
-  --dumpFile "${dumpFile}" \
+  --importFile "${importFile}" \
   --mode "${mode}"

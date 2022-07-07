@@ -1,6 +1,6 @@
 {
   "name": "tofex/magento-server-media",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "type": "magento-server-component",
   "description": "Tofex Magento Server Media",
   "license": "MIT",

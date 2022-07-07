@@ -13,7 +13,7 @@ OPTIONS:
   --help            Show this message
   --magentoVersion  Magento version
   --webPath         Web path of Magento installation
-  --dumpFile        File to import
+  --importFile      File to import
   --mode            Mode (dev/test/live/catalog/product)
 
 Example: ${scriptName} --magentoVersion 2.4.4 --webPath /var/www/magento/htdocs
@@ -22,7 +22,7 @@ EOF
 
 magentoVersion=
 webPath=
-dumpFile=
+importFile=
 mode=
 
 if [[ -f "${currentPath}/../../core/prepare-parameters.sh" ]]; then
@@ -48,16 +48,16 @@ if [[ ! -d "${webPath}" ]]; then
   exit 0
 fi
 
-if [[ -z "${dumpFile}" ]]; then
-  echo "No dump file specified!"
+if [[ -z "${importFile}" ]]; then
+  echo "No import file specified!"
   usage
   exit 1
 fi
 
-echo "Using dump file: ${dumpFile}"
+echo "Using import file: ${importFile}"
 
-if [[ ! -f "${dumpFile}" ]]; then
-  echo "Required file not found at: ${dumpFile}"
+if [[ ! -f "${importFile}" ]]; then
+  echo "Required file not found at: ${importFile}"
   exit 1
 fi
 
@@ -76,13 +76,13 @@ if [[ "${mode}" == "product" ]]; then
 fi
 
 mkdir -p "${targetPath}"
-echo "Copy dump to: ${targetPath}"
-cp "${dumpFile}" "${targetPath}"
+echo "Copy import file to: ${targetPath}"
+cp "${importFile}" "${targetPath}"
 
 cd "${targetPath}"
-fileName=$(basename "${dumpFile}")
+fileName=$(basename "${importFile}")
 echo "Extracting dump: ${fileName}"
 tar -xf "${fileName}" | cat
 
-echo "Removing copied dump: ${fileName}"
+echo "Removing copied import file: ${fileName}"
 rm -rf "${fileName}"
