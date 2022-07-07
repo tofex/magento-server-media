@@ -76,7 +76,7 @@ if [[ "${download}" == 1 ]]; then
   dumpFile="${dumpPath}/${fileName}"
 fi
 
-"${currentPath}/import.sh" -s "${system}" -i "${dumpFile}"
+"${currentPath}/import.sh" -f "${dumpFile}" -m "${mode}"
 
 if [[ "${remove}" == 1 ]]; then
   echo "Removing dump at: ${dumpFile}"
