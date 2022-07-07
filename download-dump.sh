@@ -67,7 +67,7 @@ if [[ -z "${accessToken}" ]]; then
   read -r accessToken
 fi
 
-dumpPath="${currentPath}/dumps/"
+dumpPath="${currentPath}/../var/media/dumps"
 
 mkdir -p "${dumpPath}"
 

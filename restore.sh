@@ -95,7 +95,7 @@ for server in "${serverList[@]}"; do
         exit 1
       fi
 
-      dumpPath="${currentPath}/dumps"
+      dumpPath="${currentPath}/../var/media/dumps"
 
       if [[ "${download}" == 1 ]]; then
         mkdir -p "${dumpPath}"
