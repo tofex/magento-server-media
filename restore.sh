@@ -78,6 +78,23 @@ fi
 
 "${currentPath}/import.sh" -i "${dumpFile}" -m "${mode}"
 
+magentoVersion=$(ini-parse "${currentPath}/../env.properties" "yes" "install" "magentoVersion")
+if [[ -z "${magentoVersion}" ]]; then
+  echo "No magento version specified!"
+  usage
+  exit 1
+fi
+
+if [[ ${magentoVersion:0:1} == 1 ]]; then
+  "${currentPath}/../ops/create-shared.sh" \
+    -f media \
+    -o
+else
+  "${currentPath}/../ops/create-shared.sh" \
+    -f pub/media \
+    -o
+fi
+
 if [[ "${remove}" == 1 ]]; then
   echo "Removing dump at: ${dumpFile}"
   rm -rf "${dumpFile}"

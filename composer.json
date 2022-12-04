@@ -1,13 +1,13 @@
 {
-  "name": "tofex/magento-server-media",
-  "version": "1.0.12",
-  "type": "magento-server-component",
-  "description": "Tofex Magento Server Media",
-  "license": "MIT",
-  "require": {
-    "php": ">=7.0"
-  },
-  "extra": {
-    "installer-name": "media"
-  }
+    "name": "tofex/magento-server-media",
+    "version": "1.0.12",
+    "type": "magento-server-component",
+    "description": "Tofex Magento Server Media",
+    "license": "MIT",
+    "require": {
+        "php": ">=7.0"
+    },
+    "extra": {
+        "installer-name": "media"
+    }
 }

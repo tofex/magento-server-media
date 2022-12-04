@@ -43,11 +43,6 @@ if [[ -z "${webPath}" ]]; then
   exit 1
 fi
 
-if [[ ! -d "${webPath}" ]]; then
-  echo "No web path available!"
-  exit 0
-fi
-
 if [[ -z "${importFile}" ]]; then
   echo "No import file specified!"
   usage
@@ -61,10 +56,20 @@ if [[ ! -f "${importFile}" ]]; then
   exit 1
 fi
 
+if [[ ! -d "${webPath}" ]]; then
+  echo "Creating web path at: ${webPath}"
+  mkdir -p "${webPath}"
+fi
+
 if [[ ${magentoVersion:0:1} == 1 ]]; then
   targetPath="${webPath}/media"
 else
   targetPath="${webPath}/pub/media"
+fi
+
+if [[ ! -d "${targetPath}" ]]; then
+  echo "Creating target path at: ${targetPath}"
+  mkdir -p "${targetPath}"
 fi
 
 if [[ "${mode}" == "catalog" ]] || [[ "${mode}" == "product" ]]; then
@@ -75,7 +80,11 @@ if [[ "${mode}" == "product" ]]; then
   targetPath="${targetPath}/product"
 fi
 
-mkdir -p "${targetPath}"
+if [[ ! -d "${targetPath}" ]]; then
+  echo "Creating target path at: ${targetPath}"
+  mkdir -p "${targetPath}"
+fi
+
 echo "Copy import file to: ${targetPath}"
 cp "${importFile}" "${targetPath}"
 
