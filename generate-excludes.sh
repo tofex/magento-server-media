@@ -134,7 +134,11 @@ EOF
               echo "./${bigMediaFileName}" >> "${excludeFile}"
             else
               # find all sub directories which cause the big size
-              bigMediaSubFiles=( $( find "${bigMediaFileName}"/ -maxdepth 1 -type d ! -name "." ! -path "${bigMediaFileName}"/ -exec du --exclude-from="${tempExcludeFile}" -s {} + | sort -rh | head -10 | grep -E "^[0-9]{5,}" | cat ) )
+              if [[ $(echo "test" | sort -h >/dev/null 2>&1 && echo "true" || echo "false") == "true" ]]; then
+                bigMediaSubFiles=( $( find "${bigMediaFileName}"/ -maxdepth 1 -type d ! -name "." ! -path "${bigMediaFileName}"/ -exec du --exclude-from="${tempExcludeFile}" -s {} + | sort -rh | head -10 | grep -E "^[0-9]{5,}" | cat ) )
+              else
+                bigMediaSubFiles=( $( find "${bigMediaFileName}"/ -maxdepth 1 -type d ! -name "." ! -path "${bigMediaFileName}"/ -exec du --exclude-from="${tempExcludeFile}" -s {} + | sort -r | head -10 | grep -E "^[0-9]{5,}" | cat ) )
+              fi
               for ((y=0; y<${#bigMediaSubFiles[@]}; y++)); do
                 bigMediaSubFileSize=${bigMediaSubFiles[y]}
                 y=$((y+1))
