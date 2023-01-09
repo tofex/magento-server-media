@@ -1,7 +1,6 @@
 #!/bin/bash -e
 
 currentPath="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-
 scriptName="${0##*/}"
 
 usage()
@@ -10,42 +9,22 @@ cat >&2 << EOF
 usage: ${scriptName} options
 
 OPTIONS:
-  -h  Show this message
-  -s  System name, default: system
-  -d  Download file from Google storage
-  -a  Access token to Google storage
-  -m  Mode (dev/test/live/catalog/product)
-  -f  Use this file, when not downloading from storage (optional)
-  -r  Remove after import, default: no
+  --help      Show this message
+  --download  Download file from Google storage
+  --mode      Mode (dev/test/live/catalog/product)
+  --dumpFile  Use this file, when not downloading from storage (optional)
+  --remove    Remove after import, default: no
 
-Example: ${scriptName} -m dev -d
+Example: ${scriptName} --mode dev --download --remove
 EOF
 }
 
-trim()
-{
-  echo -n "$1" | xargs
-}
-
-system="system"
 download=0
-accessToken=
 mode=
 dumpFile=
 remove=0
 
-while getopts hs:i:da:m:f:r? option; do
-  case "${option}" in
-    h) usage; exit 1;;
-    s) system=$(trim "$OPTARG");;
-    d) download=1;;
-    a) accessToken=$(trim "$OPTARG");;
-    m) mode=$(trim "$OPTARG");;
-    f) dumpFile=$(trim "$OPTARG");;
-    r) remove=1;;
-    ?) usage; exit 1;;
-  esac
-done
+source "${currentPath}/../core/prepare-parameters.sh"
 
 if [[ -z "${mode}" ]] && [[ -z "${dumpFile}" ]]; then
   echo "Specify either mode or file to import"

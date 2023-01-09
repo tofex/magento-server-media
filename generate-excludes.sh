@@ -1,5 +1,6 @@
 #!/bin/bash -e
 
+currentPath="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 scriptName="${0##*/}"
 
 usage()
@@ -8,36 +9,23 @@ cat >&2 << EOF
 usage: ${scriptName} options
 
 OPTIONS:
-  -h  Show this message
-  -m  Mode (dev/test)
-  -f  Comma separated list of forced excluded
+  --help   Show this message
+  --mode   Mode (dev/test)
+  --force  Comma separated list of forced excluded
 
-Example: ${scriptName} -m dev -f ./dir1,./dir2/dir3
+Example: ${scriptName} --mode dev --force ./dir1,./dir2/dir3
 EOF
 }
 
-trim()
-{
-  echo -n "$1" | xargs
-}
-
 mode=
+force=
 
-while getopts hm:f:? option; do
-  case "${option}" in
-    h) usage; exit 1;;
-    m) mode=$(trim "$OPTARG");;
-    f) force=$(trim "$OPTARG");;
-    ?) usage; exit 1;;
-  esac
-done
+source "${currentPath}/../core/prepare-parameters.sh"
 
 if [[ -z "${mode}" ]]; then
   usage
   exit 1
 fi
-
-currentPath="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 if [[ ! -f "${currentPath}/../env.properties" ]]; then
   echo "No environment specified!"

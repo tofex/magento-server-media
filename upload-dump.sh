@@ -1,5 +1,6 @@
 #!/bin/bash -e
 
+currentPath="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 scriptName="${0##*/}"
 
 usage()
@@ -8,30 +9,26 @@ cat >&2 << EOF
 usage: ${scriptName} options
 
 OPTIONS:
-  -h  Show this message
-  -m  Mode if type is media or mysql (dev/test)
-  -d  Date of the file
+  --help                Show this message
+  --mode                Mode if type is media or mysql (dev/test)
+  --date                Date of the file, default: current date
+  --bucketName          The name of the bucket, default: media
+  --gpcAccessToken      By specifying a GPC access token, the dump will be uploaded to GPC
+  --pCloudUserName      By specifying a pCloud username name and password, the dump will be uploaded to pCloud
+  --pCloudUserPassword  By specifying a pCloud username name and password, the dump will be uploaded to pCloud
 
-Example: ${scriptName} -m dev -d 2018-06-05
+Example: ${scriptName} --mode dev --date 2018-06-05
 EOF
-}
-
-trim()
-{
-  echo -n "$1" | xargs
 }
 
 mode=
 date=
+bucketName=
+gpcAccessToken=
+pCloudUserName=
+pCloudUserPassword=
 
-while getopts hm:d:? option; do
-  case "${option}" in
-    h) usage; exit 1;;
-    m) mode=$(trim "$OPTARG");;
-    d) date=$(trim "$OPTARG");;
-    ?) usage; exit 1;;
-  esac
-done
+source "${currentPath}/../core/prepare-parameters.sh"
 
 if [[ -z "${mode}" ]]; then
   usage
@@ -39,11 +36,12 @@ if [[ -z "${mode}" ]]; then
 fi
 
 if [[ -z "${date}" ]]; then
-  usage
-  exit 1
+  date=$(date +%Y-%m-%d)
 fi
 
-currentPath="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+if [[ -z "${bucketName}" ]]; then
+  bucketName="media"
+fi
 
 if [ ! -f "${currentPath}/../env.properties" ]; then
   echo "No environment specified!"
@@ -58,7 +56,7 @@ if [ -z "${projectId}" ]; then
 fi
 
 file="${currentPath}/../var/media/dumps/media-${mode}-${date}.tar.gz"
-objectFile="${projectId}-${mode}.tar.gz"
+uploadFileName="${projectId}-${mode}.tar.gz"
 
 if [ ! -f "${file}" ]; then
   echo "Requested upload file: ${file} does not exist!"
@@ -71,11 +69,45 @@ if [ -z "${curl}" ]; then
   exit 1
 fi
 
-echo "Please specify access token to Google storage, followed by [ENTER]:"
-read -r accessToken
+if [[ -n "${gpcAccessToken}" ]]; then
+  storage="GPC"
+fi
 
-curl -X POST \
-  -T "${file}" \
-  -H "Authorization: Bearer ${accessToken}" \
-  -H "Content-Type: application/x-gzip" \
-  "https://www.googleapis.com/upload/storage/v1/b/tofex_vm_media/o?uploadType=media&name=${objectFile}"
+if [[ -n "${pCloudUserName}" ]] && [[ -n "${pCloudUserPassword}" ]]; then
+  storage="pCloud"
+fi
+
+if [[ -z "${storage}" ]]; then
+  echo "Please select cloud storage:"
+  select storage in GPC pCloud; do
+    case "${storage}" in
+      GPC)
+        echo "Please specify access token to Google storage, followed by [ENTER]:"
+        read -r gpcAccessToken
+        break
+        ;;
+      pCloud)
+        echo "Please specify user name of pCloud storage, followed by [ENTER]:"
+        read -r pCloudUserName
+        echo "Please specify user password of pCloud storage, followed by [ENTER]:"
+        read -r pCloudUserPassword
+        break
+        ;;
+      *)
+        echo "Invalid option $REPLY"
+        ;;
+    esac
+  done
+fi
+
+if [[ "${storage}" == "GPC" ]]; then
+  echo "Uploading dump at: ${file} to Google Cloud Storage"
+  curl -X POST \
+    -T "${file}" \
+    -H "Authorization: Bearer ${gpcAccessToken}" \
+    -H "Content-Type: application/x-gzip" \
+    "https://www.googleapis.com/upload/storage/v1/b/${bucketName}/o?uploadType=media&name=${uploadFileName}"
+elif [[ "${storage}" == "pCloud" ]]; then
+  echo "Uploading dump at: ${file} to pCloud"
+  curl -F "file=@${file}" "https://eapi.pcloud.com/uploadfile?path=/${bucketName}&filename=${uploadFileName}&getauth=1&logout=1&username=${pCloudUserName}&password=${pCloudUserPassword}"
+fi

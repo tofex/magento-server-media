@@ -1,5 +1,6 @@
 #!/bin/bash -e
 
+currentPath="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 scriptName="${0##*/}"
 
 usage()
@@ -8,40 +9,25 @@ cat >&2 << EOF
 usage: ${scriptName} options
 
 OPTIONS:
-  -h  Show this message
-  -m  Mode (dev/test/live/catalog/product)
-  -u  Upload file to storage
-  -r  Remove after upload
+  --help    Show this message
+  --mode    Mode (dev/test/live/catalog/product)
+  --upload  Upload file to storage
+  --remove  Remove after upload
 
-Example: ${scriptName} -m dev -u
+Example: ${scriptName} --mode dev --upload
 EOF
-}
-
-trim()
-{
-  echo -n "$1" | xargs
 }
 
 mode=
 upload=0
 remove=0
 
-while getopts hm:ur? option; do
-  case "${option}" in
-    h) usage; exit 1;;
-    m) mode=$(trim "$OPTARG");;
-    u) upload=1;;
-    r) remove=1;;
-    ?) usage; exit 1;;
-  esac
-done
+source "${currentPath}/../core/prepare-parameters.sh"
 
 if [[ -z "${mode}" ]]; then
   usage
   exit 1
 fi
-
-currentPath="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 if [[ ! -f "${currentPath}/../env.properties" ]]; then
   echo "No environment specified!"
@@ -98,7 +84,7 @@ for server in "${serverList[@]}"; do
     fi
 
     if [[ "${upload}" == 1 ]]; then
-      "${currentPath}/upload-dump.sh" -m "${mode}" -d "${date}"
+      "${currentPath}/upload-dump.sh" --mode "${mode}" --date "${date}"
 
       if [[ "${remove}" == 1 ]]; then
         echo "Removing created archive: ${dumpPath}/media-${mode}-${date}.tar.gz"
