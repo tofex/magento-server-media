@@ -13,7 +13,7 @@ OPTIONS:
   --mode                Mode if type is media or mysql (dev/test)
   --date                Date of the file, default: current date
   --bucketName          The name of the bucket, default: media
-  --gpcAccessToken      By specifying a GPC access token, the dump will be uploaded to GPC
+  --gcpAccessToken      By specifying a GCP access token, the dump will be uploaded to GCP
   --pCloudUserName      By specifying a pCloud username name and password, the dump will be uploaded to pCloud
   --pCloudUserPassword  By specifying a pCloud username name and password, the dump will be uploaded to pCloud
 
@@ -24,7 +24,7 @@ EOF
 mode=
 date=
 bucketName=
-gpcAccessToken=
+gcpAccessToken=
 pCloudUserName=
 pCloudUserPassword=
 
@@ -69,8 +69,8 @@ if [ -z "${curl}" ]; then
   exit 1
 fi
 
-if [[ -n "${gpcAccessToken}" ]]; then
-  storage="GPC"
+if [[ -n "${gcpAccessToken}" ]]; then
+  storage="GCP"
 fi
 
 if [[ -n "${pCloudUserName}" ]] && [[ -n "${pCloudUserPassword}" ]]; then
@@ -79,11 +79,11 @@ fi
 
 if [[ -z "${storage}" ]]; then
   echo "Please select cloud storage:"
-  select storage in GPC pCloud; do
+  select storage in GCP pCloud; do
     case "${storage}" in
-      GPC)
+      GCP)
         echo "Please specify access token to Google storage, followed by [ENTER]:"
-        read -r gpcAccessToken
+        read -r gcpAccessToken
         break
         ;;
       pCloud)
@@ -100,14 +100,14 @@ if [[ -z "${storage}" ]]; then
   done
 fi
 
-if [[ "${storage}" == "GPC" ]]; then
+if [[ "${storage}" == "GCP" ]]; then
   echo "Uploading dump at: ${file} to Google Cloud Storage"
   curl -X POST \
     -T "${file}" \
-    -H "Authorization: Bearer ${gpcAccessToken}" \
+    -H "Authorization: Bearer ${gcpAccessToken}" \
     -H "Content-Type: application/x-gzip" \
     "https://www.googleapis.com/upload/storage/v1/b/${bucketName}/o?uploadType=media&name=${uploadFileName}"
 elif [[ "${storage}" == "pCloud" ]]; then
   echo "Uploading dump at: ${file} to pCloud"
-  curl -F "file=@${file}" "https://eapi.pcloud.com/uploadfile?path=/${bucketName}&filename=${uploadFileName}&getauth=1&logout=1&username=${pCloudUserName}&password=${pCloudUserPassword}"
+  curl -F "file=@${file};filename=${uploadFileName}" "https://eapi.pcloud.com/uploadfile?path=/${bucketName}&getauth=1&logout=1&username=${pCloudUserName}&password=${pCloudUserPassword}"
 fi

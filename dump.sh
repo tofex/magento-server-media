@@ -9,10 +9,13 @@ cat >&2 << EOF
 usage: ${scriptName} options
 
 OPTIONS:
-  --help    Show this message
-  --mode    Mode (dev/test/live/catalog/product)
-  --upload  Upload file to storage
-  --remove  Remove after upload
+  --help                Show this message
+  --mode                Mode (dev/test/live/catalog/product)
+  --upload              Upload file to storage
+  --remove              Remove after upload
+  --gcpAccessToken      By specifying a GCP access token, the dump will be downloaded from GCP
+  --pCloudUserName      By specifying a pCloud username name and password, the dump will be downloaded from pCloud
+  --pCloudUserPassword  By specifying a pCloud username name and password, the dump will be downloaded from pCloud
 
 Example: ${scriptName} --mode dev --upload
 EOF
@@ -21,6 +24,9 @@ EOF
 mode=
 upload=0
 remove=0
+gcpAccessToken=
+pCloudUserName=
+pCloudUserPassword=
 
 source "${currentPath}/../core/prepare-parameters.sh"
 
@@ -84,7 +90,13 @@ for server in "${serverList[@]}"; do
     fi
 
     if [[ "${upload}" == 1 ]]; then
-      "${currentPath}/upload-dump.sh" --mode "${mode}" --date "${date}"
+      if [[ -n "${gcpAccessToken}" ]]; then
+        "${currentPath}/upload-dump.sh" --mode "${mode}" --date "${date}" --gcpAccessToken "${gcpAccessToken}"
+      elif [[ -n "${pCloudUserName}" ]] && [[ -n "${pCloudUserPassword}" ]]; then
+        "${currentPath}/upload-dump.sh" --mode "${mode}" --date "${date}" --pCloudUserName "${pCloudUserName}" --pCloudUserPassword "${pCloudUserPassword}"
+      else
+        "${currentPath}/upload-dump.sh" --mode "${mode}" --date "${date}"
+      fi
 
       if [[ "${remove}" == 1 ]]; then
         echo "Removing created archive: ${dumpPath}/media-${mode}-${date}.tar.gz"

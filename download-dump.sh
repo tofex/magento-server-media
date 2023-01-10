@@ -13,7 +13,7 @@ OPTIONS:
   --mode                Mode if type is media or mysql (dev/test)
   --date                Date of the file, default: current date
   --bucketName          The name of the bucket, default: media
-  --gpcAccessToken      By specifying a GPC access token, the dump will be downloaded from GPC
+  --gcpAccessToken      By specifying a GCP access token, the dump will be downloaded from GCP
   --pCloudUserName      By specifying a pCloud username name and password, the dump will be downloaded from pCloud
   --pCloudUserPassword  By specifying a pCloud username name and password, the dump will be downloaded from pCloud
 
@@ -24,7 +24,7 @@ EOF
 mode=
 date=
 bucketName=
-gpcAccessToken=
+gcpAccessToken=
 pCloudUserName=
 pCloudUserPassword=
 
@@ -55,8 +55,8 @@ if [ -z "${projectId}" ]; then
   exit 1
 fi
 
-if [[ -n "${gpcAccessToken}" ]]; then
-  storage="GPC"
+if [[ -n "${gcpAccessToken}" ]]; then
+  storage="GCP"
 fi
 
 if [[ -n "${pCloudUserName}" ]] && [[ -n "${pCloudUserPassword}" ]]; then
@@ -65,11 +65,11 @@ fi
 
 if [[ -z "${storage}" ]]; then
   echo "Please select cloud storage:"
-  select storage in GPC pCloud; do
+  select storage in GCP pCloud; do
     case "${storage}" in
-      GPC)
+      GCP)
         echo "Please specify access token to Google storage, followed by [ENTER]:"
-        read -r gpcAccessToken
+        read -r gcpAccessToken
         break
         ;;
       pCloud)
@@ -90,14 +90,15 @@ dumpPath="${currentPath}/../var/media/dumps"
 
 mkdir -p "${dumpPath}"
 
-fileName="media-${mode}-${date}.tar.gz"
+downloadFileName="${projectId}-${mode}.tar.gz"
+targetFileName="media-${mode}-${date}.tar.gz"
 
-if [[ "${storage}" == "GPC" ]]; then
-  fileUrl="https://www.googleapis.com/download/storage/v1/b/${bucketName}/o/${fileName}?alt=media"
+if [[ "${storage}" == "GCP" ]]; then
+  fileUrl="https://www.googleapis.com/download/storage/v1/b/${bucketName}/o/${downloadFileName}?alt=media"
   echo "Checking url: ${fileUrl}"
-  fileFound=$(curl -s --head -H "Authorization: Bearer ${gpcAccessToken}" "${fileUrl}" | head -n 1 | grep -c "HTTP/2 2" || true)
+  fileFound=$(curl -s --head -H "Authorization: Bearer ${gcpAccessToken}" "${fileUrl}" | head -n 1 | grep -c "HTTP/2 2" || true)
   if [[ "${fileFound}" == 0 ]]; then
-    fileFound=$(curl -s --head -H "Authorization: Bearer ${accessToken}" "${fileUrl}" | head -n 1 | grep -c "HTTP/1.1 2" || true)
+    fileFound=$(curl -s --head -H "Authorization: Bearer ${gcpAccessToken}" "${fileUrl}" | head -n 1 | grep -c "HTTP/1.1 2" || true)
   fi
   if [[ "${fileFound}" == 0 ]]; then
     echo "Dump file not found or accessible!"
@@ -108,12 +109,12 @@ if [[ "${storage}" == "GPC" ]]; then
   if [[ $(type -t logDisable) == "function" ]]; then
     logDisable
   fi
-  curl -X GET -H "Authorization: Bearer ${accessToken}" -o "${dumpPath}/${fileName}" "${fileUrl}"
+  curl -X GET -H "Authorization: Bearer ${gcpAccessToken}" -o "${dumpPath}/${targetFileName}" "${fileUrl}"
   if [[ $(type -t logEnable) == "function" ]]; then
     logEnable
   fi
 elif [[ "${storage}" == "pCloud" ]]; then
-  fileUrl="https://eapi.pcloud.com/getfilelink?path=/${bucketName}/${fileName}&getauth=1&logout=1&username=${pCloudUserName}&password=${pCloudUserPassword}"
+  fileUrl="https://eapi.pcloud.com/getfilelink?path=/${bucketName}/${downloadFileName}&getauth=1&logout=1&username=${pCloudUserName}&password=${pCloudUserPassword}"
   echo "Checking url: ${fileUrl}"
   fileUrlData=$(curl -s "${fileUrl}")
   fileUrlHost=$(echo "${fileUrlData}" | jq -r '.hosts[]' | head -n 1)
@@ -124,7 +125,7 @@ elif [[ "${storage}" == "pCloud" ]]; then
   if [[ $(type -t logDisable) == "function" ]]; then
     logDisable
   fi
-  curl -X GET -o "${dumpPath}/${fileName}" "${fileUrl}"
+  curl -X GET -o "${dumpPath}/${targetFileName}" "${fileUrl}"
   if [[ $(type -t logEnable) == "function" ]]; then
     logEnable
   fi
