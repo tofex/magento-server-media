@@ -10,7 +10,7 @@ usage: ${scriptName} options
 
 OPTIONS:
   --help                Show this message
-  --mode                Mode if type is media or mysql (dev/test)
+  --mode                Mode (dev/test/live)
   --date                Date of the file, default: current date
   --bucketName          The name of the bucket, default: media
   --gcpAccessToken      By specifying a GCP access token, the dump will be downloaded from GCP
@@ -117,6 +117,14 @@ elif [[ "${storage}" == "pCloud" ]]; then
   fileUrl="https://eapi.pcloud.com/getfilelink?path=/${bucketName}/${downloadFileName}&getauth=1&logout=1&username=${pCloudUserName}&password=${pCloudUserPassword}"
   echo "Checking url: ${fileUrl}"
   fileUrlData=$(curl -s "${fileUrl}")
+  resultCode=$(echo "${fileUrlData}" | jq -r '.result //empty')
+
+  if [[ "${resultCode}" != 0 ]]; then
+    >&2 echo "Dump file not found or accessible!"
+    >&2 echo "${fileUrlData}" | jq -r '.error //empty'
+    exit 1
+  fi
+
   fileUrlHost=$(echo "${fileUrlData}" | jq -r '.hosts[]' | head -n 1)
   fileUrlPath=$(echo "${fileUrlData}" | jq -r '.path')
   fileUrl="https://${fileUrlHost}${fileUrlPath}"

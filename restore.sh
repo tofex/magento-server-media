@@ -11,7 +11,7 @@ usage: ${scriptName} options
 OPTIONS:
   --help                Show this message
   --mode                Mode (dev/test/live/catalog/product)
-  --download            Download file from Google storage
+  --download            Download file from storage
   --dumpFile            Use this file, when not downloading from storage (optional)
   --remove              Remove after import, default: no
   --gcpAccessToken      By specifying a GCP access token, the dump will be downloaded from GCP
