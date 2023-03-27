@@ -27,17 +27,21 @@ else
 
   for server in "${serverList[@]}"; do
     type=$(ini-parse "${currentPath}/../env.properties" "yes" "${server}" "type")
-    if [[ "${type}" == "local" ]]; then
-      webPath=$(ini-parse "${currentPath}/../env.properties" "yes" "${server}" "webPath")
-      echo "Dumping on server: ${server}"
+    webServer=$(ini-parse "${currentPath}/../env.properties" "no" "${server}" "webServer")
 
-      if [[ ${magentoVersion::1} == 1 ]]; then
-        sourcePath="${webPath}/media"
-      else
-        sourcePath="${webPath}/pub/media"
-      fi
+    if [[ -n "${webServer}" ]]; then
+      if [[ "${type}" == "local" ]]; then
+        echo "Dumping on local server: ${server}"
 
-      cat << EOF > /tmp/exclude-backup.list
+        webPath=$(ini-parse "${currentPath}/../env.properties" "yes" "${webServer}" "path")
+
+        if [[ ${magentoVersion::1} == 1 ]]; then
+          sourcePath="${webPath}/media"
+        else
+          sourcePath="${webPath}/pub/media"
+        fi
+
+        cat << EOF > /tmp/exclude-backup.list
 ./captcha
 ./catalog/category/cache
 ./catalog/product/cache
@@ -48,9 +52,10 @@ else
 ./wysiwyg/.thumbs
 EOF
 
-      cd "${sourcePath}"
-      echo "Creating archive: ${dumpFile}"
-      tar --exclude-from=/tmp/exclude-backup.list -h -zcf "${dumpFile}" .
+        cd "${sourcePath}"
+        echo "Creating archive: ${dumpFile}"
+        tar --exclude-from=/tmp/exclude-backup.list -h -zcf "${dumpFile}" .
+      fi
     fi
   done
 fi

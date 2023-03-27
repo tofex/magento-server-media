@@ -58,49 +58,54 @@ fi
 
 for server in "${serverList[@]}"; do
   type=$(ini-parse "${currentPath}/../env.properties" "yes" "${server}" "type")
-  if [[ "${type}" == "local" ]]; then
-    webPath=$(ini-parse "${currentPath}/../env.properties" "yes" "${server}" "webPath")
-    echo "Dumping media on local server: ${server}"
+  webServer=$(ini-parse "${currentPath}/../env.properties" "no" "${server}" "webServer")
 
-    if [[ ${magentoVersion::1} == 1 ]]; then
-      sourcePath="${webPath}/media"
-    else
-      sourcePath="${webPath}/pub/media"
-    fi
+  if [[ -n "${webServer}" ]]; then
+    if [[ "${type}" == "local" ]]; then
+      echo "Dumping media on local server: ${server}"
 
-    dumpPath="${currentPath}/../var/media/dumps"
+      webPath=$(ini-parse "${currentPath}/../env.properties" "yes" "${webServer}" "path")
 
-    mkdir -p "${dumpPath}"
-
-    date=$(date +%Y-%m-%d)
-
-    cd "${sourcePath}"
-    if [[ "${mode}" == "dev" ]] || [[ "${mode}" == "test" ]]; then
-      tar --exclude-from="${excludeFile}" -h -zcf "${dumpPath}/media-${mode}-${date}.tar.gz" .
-    elif [[ "${mode}" == "catalog" ]] || [[ "${mode}" == "product" ]]; then
-      cd catalog/
-      if [[ "${mode}" == "catalog" ]]; then
-        tar --exclude "./category/cache" "./product/cache" -h -zcf "${dumpPath}/media-${mode}-${date}.tar.gz" .
-      elif [[ "${mode}" == "product" ]]; then
-        cd product/
-        tar --exclude "./cache" -h -zcf "${dumpPath}/media-${mode}-${date}.tar.gz" .
-      fi
-    elif [[ "${mode}" == "live" ]]; then
-        tar --exclude "./catalog/category/cache" --exclude "./catalog/product/cache" --exclude "./wysiwyg/.thumbs" -h -zcf "${dumpPath}/media-${mode}-${date}.tar.gz" .
-    fi
-
-    if [[ "${upload}" == 1 ]]; then
-      if [[ -n "${gcpAccessToken}" ]]; then
-        "${currentPath}/upload-dump.sh" --mode "${mode}" --date "${date}" --gcpAccessToken "${gcpAccessToken}"
-      elif [[ -n "${pCloudUserName}" ]] && [[ -n "${pCloudUserPassword}" ]]; then
-        "${currentPath}/upload-dump.sh" --mode "${mode}" --date "${date}" --pCloudUserName "${pCloudUserName}" --pCloudUserPassword "${pCloudUserPassword}"
+      if [[ ${magentoVersion::1} == 1 ]]; then
+        sourcePath="${webPath}/media"
       else
-        "${currentPath}/upload-dump.sh" --mode "${mode}" --date "${date}"
+        sourcePath="${webPath}/pub/media"
       fi
 
-      if [[ "${remove}" == 1 ]]; then
-        echo "Removing created archive: ${dumpPath}/media-${mode}-${date}.tar.gz"
-        rm -rf "${dumpPath}/media-${mode}-${date}.tar.gz"
+      dumpPath="${currentPath}/../var/media/dumps"
+
+      mkdir -p "${dumpPath}"
+
+      date=$(date +%Y-%m-%d)
+
+      cd "${sourcePath}"
+      if [[ "${mode}" == "dev" ]] || [[ "${mode}" == "test" ]]; then
+        tar --exclude-from="${excludeFile}" -h -zcf "${dumpPath}/media-${mode}-${date}.tar.gz" .
+      elif [[ "${mode}" == "catalog" ]] || [[ "${mode}" == "product" ]]; then
+        cd catalog/
+        if [[ "${mode}" == "catalog" ]]; then
+          tar --exclude "./category/cache" "./product/cache" -h -zcf "${dumpPath}/media-${mode}-${date}.tar.gz" .
+        elif [[ "${mode}" == "product" ]]; then
+          cd product/
+          tar --exclude "./cache" -h -zcf "${dumpPath}/media-${mode}-${date}.tar.gz" .
+        fi
+      elif [[ "${mode}" == "live" ]]; then
+          tar --exclude "./catalog/category/cache" --exclude "./catalog/product/cache" --exclude "./wysiwyg/.thumbs" -h -zcf "${dumpPath}/media-${mode}-${date}.tar.gz" .
+      fi
+
+      if [[ "${upload}" == 1 ]]; then
+        if [[ -n "${gcpAccessToken}" ]]; then
+          "${currentPath}/upload-dump.sh" --mode "${mode}" --date "${date}" --gcpAccessToken "${gcpAccessToken}"
+        elif [[ -n "${pCloudUserName}" ]] && [[ -n "${pCloudUserPassword}" ]]; then
+          "${currentPath}/upload-dump.sh" --mode "${mode}" --date "${date}" --pCloudUserName "${pCloudUserName}" --pCloudUserPassword "${pCloudUserPassword}"
+        else
+          "${currentPath}/upload-dump.sh" --mode "${mode}" --date "${date}"
+        fi
+
+        if [[ "${remove}" == 1 ]]; then
+          echo "Removing created archive: ${dumpPath}/media-${mode}-${date}.tar.gz"
+          rm -rf "${dumpPath}/media-${mode}-${date}.tar.gz"
+        fi
       fi
     fi
   fi
